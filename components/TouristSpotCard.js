@@ -1,6 +1,8 @@
+// components/TouristSpotCard.js
 "use client";
 
 import React from "react";
+import Link from "next/link";
 
 const Star = ({ filled }) => (
   <svg
@@ -14,8 +16,16 @@ const Star = ({ filled }) => (
 );
 
 const TouristSpotCard = ({ spot }) => {
+  // Format price
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(price);
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col h-full">
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col h-full hover:shadow-xl transition-shadow duration-300">
       {/* Image */}
       <div className="relative">
         <img
@@ -23,12 +33,24 @@ const TouristSpotCard = ({ spot }) => {
           alt={spot.name}
           className="w-full h-48 object-cover"
         />
+        {/* Price Badge */}
+        {spot.price && (
+          <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-gray-900">
+            {formatPrice(spot.price)}
+          </div>
+        )}
+        {/* Duration Badge */}
+        {spot.duration && (
+          <div className="absolute top-3 left-3 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            {spot.duration} days
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-2">{spot.name}</h3>
-        <p className="text-gray-500 mb-4 flex-1">{spot.description}</p>
+        <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">{spot.name}</h3>
+        <p className="text-gray-500 mb-4 flex-1 line-clamp-2">{spot.description}</p>
 
         <div className="flex items-center justify-between mt-auto">
           {/* Rating */}
@@ -42,9 +64,12 @@ const TouristSpotCard = ({ spot }) => {
           </div>
 
           {/* Button */}
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            Visit
-          </button>
+          <Link 
+            href={`/tours/${spot.id}`}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            View Details
+          </Link>
         </div>
       </div>
     </div>

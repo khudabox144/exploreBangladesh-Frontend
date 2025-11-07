@@ -1,27 +1,46 @@
+// components/TourList.js
 "use client";
 
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import TouristSpotCard from "./TouristSpotCard";
-import touristInfo from "./TouristInfo.card";
+import { useTours } from "@/hooks/useTours";
+import LoadingSpinner from "./common/LoadingSpinner";
 
 const TouristSpotList = () => {
+  const { tours, loading, error } = useTours();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [query, setQuery] = useState("");
   const [minRating, setMinRating] = useState(0);
   const spotsToShow = 4;
   const containerRef = useRef(null);
 
+  // Transform real tour data to match component expectations
+  const touristInfo = useMemo(() => {
+    return tours.map(tour => ({
+      id: tour.id,
+      name: tour.title,
+      description: tour.description || 'Explore this amazing destination',
+      rating: 4.5, // Default rating since your schema doesn't have rating
+      image: getRandomImage(),
+      price: tour.basePrice,
+      duration: tour.durationDays,
+      difficulty: tour.difficulty,
+      location: tour.location?.name,
+      currency: tour.currency
+    }));
+  }, [tours]);
+
   // Filtered spots by search + rating
   const filtered = useMemo(() => {
     return touristInfo.filter((s) => {
-      const matchesQuery = s.name.toLowerCase().includes(query.toLowerCase()) || s.description.toLowerCase().includes(query.toLowerCase());
+      const matchesQuery = s.name.toLowerCase().includes(query.toLowerCase()) || 
+                          s.description.toLowerCase().includes(query.toLowerCase());
       const matchesRating = s.rating >= minRating;
       return matchesQuery && matchesRating;
     });
-  }, [query, minRating]);
+  }, [touristInfo, query, minRating]);
 
   useEffect(() => {
-    // Ensure index is within filtered bounds
     if (currentIndex >= filtered.length) setCurrentIndex(0);
   }, [filtered, currentIndex]);
 
@@ -36,7 +55,6 @@ const TouristSpotList = () => {
   };
 
   const getVisibleSpots = () => {
-    // If fewer items than spotsToShow, just return filtered
     if (filtered.length <= spotsToShow) return filtered;
     let visibleSpots = [];
     for (let i = 0; i < spotsToShow; i++) {
@@ -45,19 +63,57 @@ const TouristSpotList = () => {
     return visibleSpots;
   };
 
-  // Keyboard navigation
   const onKeyDown = (e) => {
     if (e.key === "ArrowRight") handleNext();
     if (e.key === "ArrowLeft") handlePrev();
   };
 
+  // Static images function
+  function getRandomImage() {
+    const images = [
+      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=400&h=300&fit=crop',
+    ];
+    return images[Math.floor(Math.random() * images.length)];
+  }
+
+  if (loading) {
+    return (
+      <section className="px-6 py-12">
+        <div className="max-w-7xl mx-auto">
+          <LoadingSpinner />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="px-6 py-12">
       <div className="max-w-7xl mx-auto">
+        {/* Success/Error Message */}
+        {error && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+            <div className="flex items-center">
+              <span className="text-yellow-600 mr-2">⚠️</span>
+              <div>
+                <p className="text-yellow-800 font-medium">Backend Connection Issue</p>
+                <p className="text-yellow-700 text-sm">{error}</p>
+                <p className="text-yellow-600 text-xs mt-1">
+                  Showing {tours.length} tour(s) {tours.length > 0 && tours[0].id > 2 ? 'from backend' : 'from mock data'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h2 className="text-3xl font-extrabold text-gray-800">Trending Adventures</h2>
-            <p className="text-sm text-gray-500 mt-1">Handpicked tours with exclusive deals</p>
+            <p className="text-sm text-gray-500 mt-1">
+              {tours.length > 0 && tours[0].id > 2 ? 'Real tours from your backend' : 'Demo tours'}
+            </p>
           </div>
 
           <div className="flex items-center space-x-3">
@@ -75,14 +131,16 @@ const TouristSpotList = () => {
               <option value={4.5}>4.5+ stars</option>
             </select>
 
-            <div className="hidden sm:flex items-center space-x-2">
-              <button onClick={handlePrev} className="p-2 border border-gray-300 rounded-full text-gray-600 hover:bg-gray-100 transition">
-                ‹
-              </button>
-              <button onClick={handleNext} className="p-2 border border-gray-300 rounded-full text-gray-600 hover:bg-gray-100 transition">
-                ›
-              </button>
-            </div>
+            {filtered.length > spotsToShow && (
+              <div className="hidden sm:flex items-center space-x-2">
+                <button onClick={handlePrev} className="p-2 border border-gray-300 rounded-full text-gray-600 hover:bg-gray-100 transition">
+                  ‹
+                </button>
+                <button onClick={handleNext} className="p-2 border border-gray-300 rounded-full text-gray-600 hover:bg-gray-100 transition">
+                  ›
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -93,18 +151,26 @@ const TouristSpotList = () => {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           {getVisibleSpots().length === 0 ? (
-            <div className="col-span-full text-center text-gray-500 py-12">No tours match your search.</div>
+            <div className="col-span-full text-center text-gray-500 py-12">
+              No tours match your search.
+            </div>
           ) : (
-            getVisibleSpots().map((spot, index) => <TouristSpotCard key={spot.name + index} spot={spot} />)
+            getVisibleSpots().map((spot, index) => (
+              <TouristSpotCard key={spot.id} spot={spot} />
+            ))
           )}
         </div>
 
         {/* Mobile nav */}
-        <div className="flex items-center justify-center mt-6 sm:hidden space-x-4">
-          <button onClick={handlePrev} className="px-3 py-2 border rounded">Prev</button>
-          <div className="text-sm text-gray-600">{filtered.length} results</div>
-          <button onClick={handleNext} className="px-3 py-2 border rounded">Next</button>
-        </div>
+        {filtered.length > spotsToShow && (
+          <div className="flex items-center justify-center mt-6 sm:hidden space-x-4">
+            <button onClick={handlePrev} className="px-3 py-2 border rounded">Prev</button>
+            <div className="text-sm text-gray-600">
+              {currentIndex + 1}-{Math.min(currentIndex + spotsToShow, filtered.length)} of {filtered.length}
+            </div>
+            <button onClick={handleNext} className="px-3 py-2 border rounded">Next</button>
+          </div>
+        )}
       </div>
     </section>
   );
