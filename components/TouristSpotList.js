@@ -1,26 +1,24 @@
 // components/TourList.js
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import TouristSpotCard from "./TouristSpotCard";
-import { useTours } from "@/hooks/useTours";
+import { useTours } from "../hooks/useTours";
 import LoadingSpinner from "./common/LoadingSpinner";
 
 const TouristSpotList = () => {
   const { tours, loading, error } = useTours();
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [query, setQuery] = useState("");
-  const [minRating, setMinRating] = useState(0);
-  const spotsToShow = 4;
-  const containerRef = useRef(null);
+  const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [priceFilter, setPriceFilter] = useState("all");
 
-  // Transform real tour data to match component expectations
+  // Transform tour data for the card component
   const touristInfo = useMemo(() => {
     return tours.map(tour => ({
       id: tour.id,
       name: tour.title,
       description: tour.description || 'Explore this amazing destination',
-      rating: 4.5, // Default rating since your schema doesn't have rating
+      rating: 4.5, // Default rating
       image: getRandomImage(),
       price: tour.basePrice,
       duration: tour.durationDays,
@@ -30,43 +28,23 @@ const TouristSpotList = () => {
     }));
   }, [tours]);
 
-  // Filtered spots by search + rating
+  // Filtered spots by search + difficulty + price
   const filtered = useMemo(() => {
-    return touristInfo.filter((s) => {
-      const matchesQuery = s.name.toLowerCase().includes(query.toLowerCase()) || 
-                          s.description.toLowerCase().includes(query.toLowerCase());
-      const matchesRating = s.rating >= minRating;
-      return matchesQuery && matchesRating;
+    return touristInfo.filter((tour) => {
+      const matchesQuery = tour.name.toLowerCase().includes(query.toLowerCase()) || 
+                          tour.description.toLowerCase().includes(query.toLowerCase());
+      
+      const matchesDifficulty = difficultyFilter === "all" || 
+                               tour.difficulty?.toLowerCase() === difficultyFilter;
+      
+      const matchesPrice = priceFilter === "all" || 
+                          (priceFilter === "budget" && tour.price <= 200) ||
+                          (priceFilter === "mid" && tour.price > 200 && tour.price <= 400) ||
+                          (priceFilter === "premium" && tour.price > 400);
+      
+      return matchesQuery && matchesDifficulty && matchesPrice;
     });
-  }, [touristInfo, query, minRating]);
-
-  useEffect(() => {
-    if (currentIndex >= filtered.length) setCurrentIndex(0);
-  }, [filtered, currentIndex]);
-
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % Math.max(filtered.length, 1));
-    containerRef.current?.focus();
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + Math.max(filtered.length, 1)) % Math.max(filtered.length, 1));
-    containerRef.current?.focus();
-  };
-
-  const getVisibleSpots = () => {
-    if (filtered.length <= spotsToShow) return filtered;
-    let visibleSpots = [];
-    for (let i = 0; i < spotsToShow; i++) {
-      visibleSpots.push(filtered[(currentIndex + i) % filtered.length]);
-    }
-    return visibleSpots;
-  };
-
-  const onKeyDown = (e) => {
-    if (e.key === "ArrowRight") handleNext();
-    if (e.key === "ArrowLeft") handlePrev();
-  };
+  }, [touristInfo, query, difficultyFilter, priceFilter]);
 
   // Static images function
   function getRandomImage() {
@@ -75,13 +53,17 @@ const TouristSpotList = () => {
       'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&h=300&fit=crop',
       'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=400&h=300&fit=crop',
       'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=300&fit=crop',
+      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop',
     ];
     return images[Math.floor(Math.random() * images.length)];
   }
 
   if (loading) {
     return (
-      <section className="px-6 py-12">
+      <section className="px-6 py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <LoadingSpinner />
         </div>
@@ -90,85 +72,79 @@ const TouristSpotList = () => {
   }
 
   return (
-    <section className="px-6 py-12">
+    <section className="px-6 py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        {/* Success/Error Message */}
         {error && (
           <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-            <div className="flex items-center">
-              <span className="text-yellow-600 mr-2">⚠️</span>
-              <div>
-                <p className="text-yellow-800 font-medium">Backend Connection Issue</p>
-                <p className="text-yellow-700 text-sm">{error}</p>
-                <p className="text-yellow-600 text-xs mt-1">
-                  Showing {tours.length} tour(s) {tours.length > 0 && tours[0].id > 2 ? 'from backend' : 'from mock data'}
-                </p>
-              </div>
-            </div>
+            <p className="text-yellow-800">{error}</p>
           </div>
         )}
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h2 className="text-3xl font-extrabold text-gray-800">Trending Adventures</h2>
+            <h2 className="text-3xl font-extrabold text-gray-800">Featured Tours</h2>
             <p className="text-sm text-gray-500 mt-1">
-              {tours.length > 0 && tours[0].id > 2 ? 'Real tours from your backend' : 'Demo tours'}
+              {filtered.length} amazing tours available
             </p>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-wrap items-center gap-3">
             <input
               aria-label="Search tours"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name or description"
+              placeholder="Search tours..."
               className="px-3 py-2 border rounded-md text-sm w-56"
             />
 
-            <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} className="px-3 py-2 border rounded-md text-sm">
-              <option value={0}>All ratings</option>
-              <option value={4}>4+ stars</option>
-              <option value={4.5}>4.5+ stars</option>
+            <select 
+              value={difficultyFilter} 
+              onChange={(e) => setDifficultyFilter(e.target.value)} 
+              className="px-3 py-2 border rounded-md text-sm"
+            >
+              <option value="all">All Difficulty</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
             </select>
 
-            {filtered.length > spotsToShow && (
-              <div className="hidden sm:flex items-center space-x-2">
-                <button onClick={handlePrev} className="p-2 border border-gray-300 rounded-full text-gray-600 hover:bg-gray-100 transition">
-                  ‹
-                </button>
-                <button onClick={handleNext} className="p-2 border border-gray-300 rounded-full text-gray-600 hover:bg-gray-100 transition">
-                  ›
-                </button>
-              </div>
-            )}
+            <select 
+              value={priceFilter} 
+              onChange={(e) => setPriceFilter(e.target.value)} 
+              className="px-3 py-2 border rounded-md text-sm"
+            >
+              <option value="all">All Prices</option>
+              <option value="budget">Budget ($0-200)</option>
+              <option value="mid">Mid ($201-400)</option>
+              <option value="premium">Premium ($400+)</option>
+            </select>
           </div>
         </div>
 
-        <div
-          ref={containerRef}
-          tabIndex={0}
-          onKeyDown={onKeyDown}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-        >
-          {getVisibleSpots().length === 0 ? (
-            <div className="col-span-full text-center text-gray-500 py-12">
-              No tours match your search.
-            </div>
-          ) : (
-            getVisibleSpots().map((spot, index) => (
-              <TouristSpotCard key={spot.id} spot={spot} />
-            ))
-          )}
+        {/* Show first 8 tours in a grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filtered.slice(0, 8).map((spot) => (
+            <TouristSpotCard key={spot.id} spot={spot} />
+          ))}
         </div>
 
-        {/* Mobile nav */}
-        {filtered.length > spotsToShow && (
-          <div className="flex items-center justify-center mt-6 sm:hidden space-x-4">
-            <button onClick={handlePrev} className="px-3 py-2 border rounded">Prev</button>
-            <div className="text-sm text-gray-600">
-              {currentIndex + 1}-{Math.min(currentIndex + spotsToShow, filtered.length)} of {filtered.length}
+        {/* Show "Load More" if there are more than 8 tours */}
+        {filtered.length > 8 && (
+          <div className="text-center mt-8">
+            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+              Load More Tours ({filtered.length - 8} more available)
+            </button>
+          </div>
+        )}
+
+        {/* Show message if no tours match filters */}
+        {filtered.length === 0 && (
+          <div className="text-center py-12">
+            <div className="bg-white rounded-2xl p-8 max-w-md mx-auto shadow-lg">
+              <div className="text-gray-400 text-6xl mb-4">🔍</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No tours found</h3>
+              <p className="text-gray-600">Try adjusting your search criteria or filters</p>
             </div>
-            <button onClick={handleNext} className="px-3 py-2 border rounded">Next</button>
           </div>
         )}
       </div>
