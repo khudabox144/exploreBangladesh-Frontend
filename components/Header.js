@@ -59,12 +59,12 @@ const Header = () => {
 
               {/* Right-side Actions */}
               <div className="flex items-center space-x-4">
-                <a
-                  href="#"
+                <Link
+                  href="/admin"
                   className="hidden lg:block text-sm font-semibold text-blue-600 hover:underline"
                 >
-                  Get app
-                </a>
+                  admin
+                </Link>
                 <button className="flex items-center space-x-1 hover:text-blue-600 transition-colors duration-200">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

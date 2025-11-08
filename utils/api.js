@@ -11,7 +11,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Request interceptor for adding auth token (for future use)
+// Request interceptor for adding auth token (optional)
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
@@ -37,14 +37,25 @@ export const toursAPI = {
   getAll: () => api.get('/tours'),
   getById: (id) => api.get(`/tours/${id}`),
   create: (data) => api.post('/tours', data),
+  update: (id, data) => api.put(`/tours/${id}`, data),
+  delete: (id) => api.delete(`/tours/${id}`),
 };
+
+// Admin Tour Places API
+export const adminTourPlacesAPI = {
+  create: (data) => api.post('/admin/tour-places', data),
+  getDistricts: () => api.get('/admin/tour-places/districts'),
+};
+
 
 // Users API
 export const usersAPI = {
   getAll: () => api.get('/users'),
   getById: (id) => api.get(`/users/${id}`),
   create: (data) => api.post('/users', data),
-  login: (data) => api.post('/users/login', data), // Add if you implement auth
+  update: (id, data) => api.put(`/users/${id}`, data),
+  delete: (id) => api.delete(`/users/${id}`),
+  login: (data) => api.post('/users/login', data), // Optional auth
 };
 
 // Bookings API
@@ -66,6 +77,8 @@ export const reviewsAPI = {
 export const divisionsAPI = {
   getAll: () => api.get('/divisions'),
   create: (data) => api.post('/divisions', data),
+  update: (id, data) => api.put(`/divisions/${id}`, data),
+  delete: (id) => api.delete(`/divisions/${id}`),
 };
 
 // Districts API
@@ -73,6 +86,8 @@ export const districtsAPI = {
   getAll: () => api.get('/districts'),
   getByDivision: (divisionId) => api.get(`/districts/division/${divisionId}`),
   create: (data) => api.post('/districts', data),
+  update: (id, data) => api.put(`/districts/${id}`, data),
+  delete: (id) => api.delete(`/districts/${id}`),
 };
 
 // Tour Places API
@@ -80,6 +95,8 @@ export const tourPlacesAPI = {
   getAll: () => api.get('/tour-places'),
   getByDistrict: (districtId) => api.get(`/tour-places/district/${districtId}`),
   create: (data) => api.post('/tour-places', data),
+  update: (id, data) => api.put(`/tour-places/${id}`, data),
+  delete: (id) => api.delete(`/tour-places/${id}`),
   addReview: (id, data) => api.post(`/tour-places/${id}/reviews`, data),
 };
 

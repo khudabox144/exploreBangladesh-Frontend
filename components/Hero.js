@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const tourData = [
     {
-        imageUrl: "/teagarden.jpg",
+        imageUrl: "https://i0.wp.com/sylhettouristplaces.com/wp-content/uploads/2020/02/Bisnakandi-Sylhet.jpg?fit=2000%2C1333&ssl=1",
         title: "Sylhet",
         saleText: "Nature"
     },

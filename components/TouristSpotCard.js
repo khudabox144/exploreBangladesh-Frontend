@@ -1,4 +1,3 @@
-// components/TouristSpotCard.js
 "use client";
 
 import React from "react";
@@ -93,10 +92,10 @@ const TouristSpotCard = ({ spot }) => {
                 <Star key={i} filled={i < Math.round(spot.rating)} />
               ))}
             </div>
-            <span className="ml-2 text-sm text-gray-600">{spot.rating}</span>
+            <span className="ml-2 text-sm text-gray-600">{spot.rating.toFixed(1)}</span>
           </div>
 
-          {/* Button */}
+          {/* Button - Links to tour details page */}
           <Link 
             href={`/tours/${spot.id}`}
             className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg font-medium"
