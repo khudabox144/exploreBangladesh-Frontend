@@ -41,12 +41,10 @@ const TouristSpotCard = ({ spot }) => {
       {/* Image */}
       <div className="relative">
         <img
-          src={spot.image}
+          src={spot.image || '/placeholder-image.jpg'}
           alt={spot.name}
           className="w-full h-48 object-cover"
-          onError={(e) => {
-            e.target.src = '/placeholder-image.jpg';
-          }}
+          onError={(e) => { e.target.src = '/placeholder-image.jpg'; }}
         />
         
         {/* Price Badge */}
@@ -63,7 +61,7 @@ const TouristSpotCard = ({ spot }) => {
         
         {/* Duration Badge */}
         <div className="absolute bottom-3 left-3 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-          {spot.duration} day{spot.duration > 1 ? 's' : ''}
+          {spot.duration || 1} day{spot.duration > 1 ? 's' : ''}
         </div>
       </div>
 
@@ -102,7 +100,7 @@ const TouristSpotCard = ({ spot }) => {
           {/* Button - Links to tour details page */}
           <Link 
             href={`/tours/${spot.id}`}
-            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg font-medium shadow-md"
+            className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg font-medium"
           >
             View Details
           </Link>
