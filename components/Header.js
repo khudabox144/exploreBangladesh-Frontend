@@ -50,10 +50,10 @@ const Header = () => {
                   Tour Packages
                 </a>
                 <a
-                  href="#contact"
+                  href="/allDestination"
                   className="hover:text-blue-600 transition-colors duration-200"
                 >
-                  Contact
+                  allDestination
                 </a>
               </nav>
 
