@@ -96,7 +96,7 @@ const Header = () => {
                     />
                   </svg>
                 </button>
-                <Link href="/signin" >
+                <Link href="/auth" >
                   <button className="p-2 border border-gray-300 rounded-full text-gray-600 hover:text-blue-600 hover:border-blue-600 transition-colors duration-200">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
