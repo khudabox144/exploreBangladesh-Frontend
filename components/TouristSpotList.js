@@ -1,16 +1,34 @@
-// components/TourList.js
+// components/TouristSpotList.jsx
 "use client";
 
 import React, { useState, useMemo } from "react";
 import TouristSpotCard from "./TouristSpotCard";
-import { useTours } from "../hooks/useTours";
-import LoadingSpinner from "./common/LoadingSpinner";
 
 const TouristSpotList = () => {
-  const { tours, loading, error } = useTours();
+  const [tours, setTours] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [query, setQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
+
+  // Fetch tours on component mount
+  React.useEffect(() => {
+    async function fetchTours() {
+      try {
+        setLoading(true);
+        const res = await fetch('http://localhost:5000/api/tours');
+        if (!res.ok) throw new Error('Failed to fetch tours');
+        const data = await res.json();
+        setTours(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTours();
+  }, []);
 
   // Transform tour data for the card component
   const touristInfo = useMemo(() => {
@@ -65,7 +83,9 @@ const TouristSpotList = () => {
     return (
       <section className="px-6 py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto">
-          <LoadingSpinner />
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
         </div>
       </section>
     );
@@ -80,7 +100,7 @@ const TouristSpotList = () => {
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h2 className="text-3xl font-extrabold text-gray-800">Featured Tours</h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -94,13 +114,13 @@ const TouristSpotList = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search tours..."
-              className="px-3 py-2 border rounded-md text-sm w-56"
+              className="px-4 py-2 border border-gray-300 rounded-xl text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
 
             <select 
               value={difficultyFilter} 
               onChange={(e) => setDifficultyFilter(e.target.value)} 
-              className="px-3 py-2 border rounded-md text-sm"
+              className="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Difficulty</option>
               <option value="easy">Easy</option>
@@ -111,7 +131,7 @@ const TouristSpotList = () => {
             <select 
               value={priceFilter} 
               onChange={(e) => setPriceFilter(e.target.value)} 
-              className="px-3 py-2 border rounded-md text-sm"
+              className="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Prices</option>
               <option value="budget">Budget ($0-200)</option>
@@ -131,7 +151,7 @@ const TouristSpotList = () => {
         {/* Show "Load More" if there are more than 8 tours */}
         {filtered.length > 8 && (
           <div className="text-center mt-8">
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg font-medium shadow-md">
               Load More Tours ({filtered.length - 8} more available)
             </button>
           </div>
@@ -140,7 +160,7 @@ const TouristSpotList = () => {
         {/* Show message if no tours match filters */}
         {filtered.length === 0 && (
           <div className="text-center py-12">
-            <div className="bg-white rounded-2xl p-8 max-w-md mx-auto shadow-lg">
+            <div className="bg-white rounded-2xl p-8 max-w-md mx-auto shadow-lg border border-gray-100">
               <div className="text-gray-400 text-6xl mb-4">🔍</div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No tours found</h3>
               <p className="text-gray-600">Try adjusting your search criteria or filters</p>

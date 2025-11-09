@@ -143,11 +143,6 @@ export default function Page() {
         <section id="hero">
           <Hero />
         </section>
-        
-        {/* Featured Tours Section */}
-        <section id="featured-tours">
-          <FeaturedToursSection />
-        </section>
 
         {/* Districts Section */}
         <section id="districts">
@@ -162,12 +157,12 @@ export default function Page() {
           <BangladeshTour />
         </section>
 
-        <section id="registration" className="py-12 bg-gray-50">
+        {/* <section id="registration" className="py-12 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4">
             <h2 className="text-3xl font-bold text-center mb-8">Join Our Community</h2>
             <UserRegistration />
           </div>
-        </section>
+        </section> */}
         
         <section id="recommendation">
           <Recommendation />

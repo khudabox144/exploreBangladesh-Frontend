@@ -1,7 +1,8 @@
+// app/division/[division]/[district]/page.js
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import TouristSpotCard from "@/components/TouristSpotCard";
+import TourPlaceCard from "@/components/TourPlaceCard"; // Changed import
 
 export default function DistrictTourPage() {
   const params = useParams(); // { division, district }
@@ -80,7 +81,7 @@ export default function DistrictTourPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tourPlaces.map(place => (
-              <TouristSpotCard key={place.id} spot={place} />
+              <TourPlaceCard key={place.id} place={place} />
             ))}
           </div>
         )}
