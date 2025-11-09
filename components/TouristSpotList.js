@@ -1,4 +1,3 @@
-// components/TouristSpotList.jsx
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -11,6 +10,7 @@ const TouristSpotList = () => {
   const [query, setQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
+  const [displayCount, setDisplayCount] = useState(8); // Track how many tours to show
 
   // Fetch tours on component mount
   React.useEffect(() => {
@@ -64,6 +64,21 @@ const TouristSpotList = () => {
     });
   }, [touristInfo, query, difficultyFilter, priceFilter]);
 
+  // Tours to display based on current displayCount
+  const toursToDisplay = useMemo(() => {
+    return filtered.slice(0, displayCount);
+  }, [filtered, displayCount]);
+
+  // Load more function
+  const loadMore = () => {
+    setDisplayCount(prevCount => prevCount + 8); // Load 8 more tours
+  };
+
+  // Reset display count when filters change
+  React.useEffect(() => {
+    setDisplayCount(8);
+  }, [query, difficultyFilter, priceFilter]);
+
   // Static images function
   function getRandomImage() {
     const images = [
@@ -104,7 +119,7 @@ const TouristSpotList = () => {
           <div>
             <h2 className="text-3xl font-extrabold text-gray-800">Featured Tours</h2>
             <p className="text-sm text-gray-500 mt-1">
-              {filtered.length} amazing tours available
+              Showing {toursToDisplay.length} of {filtered.length} amazing tours
             </p>
           </div>
 
@@ -141,18 +156,33 @@ const TouristSpotList = () => {
           </div>
         </div>
 
-        {/* Show first 8 tours in a grid */}
+        {/* Show tours based on displayCount */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filtered.slice(0, 8).map((spot) => (
+          {toursToDisplay.map((spot) => (
             <TouristSpotCard key={spot.id} spot={spot} />
           ))}
         </div>
 
-        {/* Show "Load More" if there are more than 8 tours */}
-        {filtered.length > 8 && (
+        {/* Show "Load More" if there are more tours to display */}
+        {filtered.length > displayCount && (
           <div className="text-center mt-8">
-            <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg font-medium shadow-md">
-              Load More Tours ({filtered.length - 8} more available)
+            <button 
+              onClick={loadMore}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg font-medium shadow-md"
+            >
+              Load More Tours ({filtered.length - displayCount} more available)
+            </button>
+          </div>
+        )}
+
+        {/* Show "Show Less" if more than initial count is displayed */}
+        {displayCount > 8 && (
+          <div className="text-center mt-4">
+            <button 
+              onClick={() => setDisplayCount(8)}
+              className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+            >
+              Show Less
             </button>
           </div>
         )}

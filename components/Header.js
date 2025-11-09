@@ -20,7 +20,7 @@ const Header = () => {
             {/* Logo */}
             <div className="flex-shrink-0">
               <a
-                href="#"
+                href="/"
                 className="text-3xl font-bold text-blue-800 tracking-tight"
               >
                 Explore Bangladesh

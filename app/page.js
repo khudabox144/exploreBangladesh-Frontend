@@ -1,4 +1,7 @@
 // app/page.js
+"use client";
+
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import TouristSpotList from "@/components/TouristSpotList";
 import BangladeshTour from "@/components/BangladeshTour";
@@ -9,18 +12,71 @@ import Link from 'next/link';
 
 // Districts Section Component
 const DistrictsSection = () => {
-  const districts = [
-    { name: 'Dhaka', tourCount: 15 },
-    { name: 'Chittagong', tourCount: 12 },
-    { name: 'Cox\'s Bazar', tourCount: 8 },
-    { name: 'Bandarban', tourCount: 6 },
-    { name: 'Rangamati', tourCount: 5 },
-    { name: 'Sylhet', tourCount: 7 }
-  ];
+  const [districts, setDistricts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchDistricts() {
+      try {
+        setLoading(true);
+        const res = await fetch('http://localhost:5000/api/districts');
+        if (!res.ok) throw new Error('Failed to fetch districts');
+        const data = await res.json();
+        setDistricts(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDistricts();
+  }, []);
 
   const formatDistrictUrl = (name) => {
     return name.toLowerCase().replace(/'/g, '').replace(/\s+/g, '-');
   };
+
+  const getDivisionName = (district) => {
+    return district.division?.name || 'Unknown Division';
+  };
+
+  const getTourPlacesCount = (district) => {
+    return district.tourPlaces?.length || 0;
+  };
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-lg text-gray-600 mb-2">Popular Districts</h2>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Explore by District</h1>
+            <p className="text-gray-600 text-lg">
+              Discover amazing tourist spots across different districts of Bangladesh
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 max-w-md mx-auto">
+              <p className="text-yellow-800">Error loading districts: {error}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-white">
@@ -29,24 +85,64 @@ const DistrictsSection = () => {
           <h2 className="text-lg text-gray-600 mb-2">Popular Districts</h2>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Explore by District</h1>
           <p className="text-gray-600 text-lg">
-            Discover amazing tourist spots across different districts of Bangladesh
+            Discover amazing tourist spots across {districts.length} districts of Bangladesh
           </p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {districts.map((district) => (
-            <Link 
-              key={district.name}
-              href={`/districts/${formatDistrictUrl(district.name)}`}
-            >
-              <div className="bg-white border-2 border-gray-200 rounded-xl p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1">
-                <h3 className="font-semibold text-gray-900 mb-2">{district.name}</h3>
-                <p className="text-sm text-gray-600">{district.tourCount} tours</p>
-              </div>
-            </Link>
-          ))}
+        {/* Horizontal Scrollable Container */}
+        <div className="relative">
+          <div className="flex space-x-6 overflow-x-auto pb-6 scrollbar-hide">
+            {districts.map((district) => (
+              <Link 
+                key={district.id}
+                href={`/division/${formatDistrictUrl(getDivisionName(district))}/${formatDistrictUrl(district.name)}`}
+                className="flex-shrink-0 w-64"
+              >
+                <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-1 h-full flex flex-col">
+                  <h3 className="font-semibold text-gray-900 mb-2 text-lg">
+                    {district.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {getDivisionName(district)}
+                  </p>
+                  <div className="mt-auto">
+                    <p className="text-sm text-blue-600 font-medium">
+                      {getTourPlacesCount(district)} tourist places
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+          
+          {/* Gradient fade effect on the right */}
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-500 flex items-center justify-center">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+            </svg>
+            Scroll to explore more districts
+            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </p>
         </div>
       </div>
+
+      {/* Custom scrollbar hide styles */}
+      <style jsx>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </section>
   );
 };
@@ -144,7 +240,7 @@ export default function Page() {
           <Hero />
         </section>
 
-        {/* Districts Section */}
+        {/* Dynamic Districts Section */}
         <section id="districts">
           <DistrictsSection />
         </section>
